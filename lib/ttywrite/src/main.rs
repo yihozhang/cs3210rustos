@@ -54,4 +54,17 @@ fn main() {
     let mut port = serial::open(&opt.tty_path).expect("path points to invalid TTY");
 
     // FIXME: Implement the `ttywrite` utility.
+    let mut input_file: Box<dyn io::Read> = if let Some(path) = opt.input {
+        Box::new(File::open(path).expect("cannot open input file"))
+    } else {
+        Box::new(io::stdin())
+    };
+
+    if opt.raw {
+        io::copy(&mut input_file, &mut port).expect("copying data error");
+    } else {
+        Xmodem::transmit_with_progress(input_file, &mut port, |progress| {
+            println!("Progress: {:?}", progress);
+        }).expect("transmission failed");
+    }
 }
