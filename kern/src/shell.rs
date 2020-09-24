@@ -1,6 +1,7 @@
 use stack_vec::StackVec;
 
 use crate::console::{kprint, kprintln, CONSOLE};
+use core::str::from_utf8;
 
 /// Error type for `Command` parse failures.
 #[derive(Debug)]
@@ -37,12 +38,74 @@ impl<'a> Command<'a> {
 
     /// Returns this command's path. This is equivalent to the first argument.
     fn path(&self) -> &str {
-        unimplemented!()
+        self.args[0]
     }
 }
 
 /// Starts a shell using `prefix` as the prefix for each line. This function
 /// returns if the `exit` command is called.
 pub fn shell(prefix: &str) -> ! {
-    unimplemented!()
+    const CMD_LEN: usize = 512;
+    const ARG_LEN: usize = 64;
+    kprintln!("Welcome to RustOS");
+    kprintln!();
+    loop {
+        let mut cmd_buf = [0u8; CMD_LEN];
+        let mut arg_buf = [""; ARG_LEN];
+
+        kprintln!();
+        kprint!("{}", prefix);
+
+        let mut i = 0;
+        'cmd: loop {
+            if i == CMD_LEN {
+                kprintln!();
+                kprintln!("command length exceeds {}", CMD_LEN);
+                break 'cmd;
+            }
+
+            let byte = CONSOLE.lock().read_byte();
+            if byte == b'\n' || byte == b'\r' {
+                kprintln!();
+                let cmd = from_utf8(&cmd_buf[0..i]).expect("can't convert byte array to string");
+                match Command::parse(cmd, &mut arg_buf) { // enter
+                    Err(Error::Empty) => {},
+                    Err(Error::TooManyArgs) => {
+                        kprintln!("error: too many arguments");
+                    },
+                    Ok(cmd) => {
+                        process_command(cmd);
+                    }
+                }
+                break 'cmd;
+            } else if byte == 8 || byte == 127 { // backspace
+                if i == 0 {
+                    continue 'cmd;
+                }
+                kprint!("\u{8} \u{8}");
+                i -= 1
+            } else {
+                cmd_buf[i] = byte;
+                CONSOLE.lock().write_byte(byte);
+                i += 1;
+            }
+        }
+    }
+}
+
+fn process_command<'a>(cmd: Command<'a>) {
+    match cmd.path() {
+        "echo" => {
+            if cmd.args.len() > 1 {
+                kprint!("{}", cmd.args[1]);
+                for arg in cmd.args[2..].iter() {
+                    kprint!(" {}", arg);
+                }
+            }
+            kprintln!();
+        },
+        unknown => {
+            kprintln!("unknown command: {}", unknown);
+        }
+    }
 }

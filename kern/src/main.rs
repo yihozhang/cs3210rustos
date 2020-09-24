@@ -40,15 +40,5 @@ fn blink_test() {
 
 fn kmain() -> ! {
     // FIXME: Start the shell.
-    // blink_test();
-    let mut buf = [0u8; 4];
-    let mut miniuart = MiniUart::new();
-    loop {
-        // miniuart.read(&mut buf).unwrap();
-        // miniuart.write_str("<-").unwrap();
-        // miniuart.write(&buf).unwrap();
-        // miniuart.write_str("->").unwrap();
-        let b = miniuart.read_byte();
-        miniuart.write_byte(b);
-    }
+    shell::shell("> ");
 }

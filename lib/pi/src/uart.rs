@@ -30,23 +30,23 @@ struct Registers {
     // FIXME: Declare the "MU" registers from page 8.
     AUX_MU_IO_REG: Volatile<u8>,
     __r1: [Reserved<u8>;3],
-    AUX_MU_IER_REG: Volatile<u8>,
+    AUX_MU_IER_REG: Reserved<u8>,
     __r2: [Reserved<u8>;3],
-    AUX_MU_IIR_REG: Volatile<u8>,
+    AUX_MU_IIR_REG: Reserved<u8>,
     __r3: [Reserved<u8>;3],
     AUX_MU_LCR_REG: Volatile<u8>,
     __r4: [Reserved<u8>;3],
     AUX_MU_MCR_REG: Volatile<u8>,
     __r5: [Reserved<u8>;3],
-    AUX_MU_LSR_REG: Volatile<u8>,
+    AUX_MU_LSR_REG: ReadVolatile<u8>,
     __r6: [Reserved<u8>;3],
     AUX_MU_MSR_REG: Volatile<u8>,
     __r7: [Reserved<u8>;3],
-    AUX_MU_SCRATCH: Volatile<u8>,
+    AUX_MU_SCRATCH: Reserved<u8>,
     __r8: [Reserved<u8>;3],
     AUX_MU_CNTL_REG: Volatile<u8>,
     __r9: [Reserved<u8>;3],
-    AUX_MU_STAT_REG: Volatile<u32>,
+    AUX_MU_STAT_REG: Reserved<u32>,
     AUX_MU_BAUD_REG: Volatile<u16>,
 }
 
@@ -73,7 +73,7 @@ impl MiniUart {
 
         // FIXME: Implement remaining mini UART initialization.
         // set data length to 8
-        registers.AUX_MU_LCR_REG.write(registers.AUX_MU_LCR_REG.read() | 0b11);
+        registers.AUX_MU_LCR_REG.or_mask(0b11);
         // set Baud rate, which is 1.5*1000^3 / 8 / (1626 + 1) =~= 115242
         // registers.AUX_MU_BAUD_REG.write(1626);
         registers.AUX_MU_BAUD_REG.write(270);
@@ -83,7 +83,7 @@ impl MiniUart {
         Gpio::new(15).into_alt(Function::Alt5);
 
         // enable UART transmitter and receiver
-        registers.AUX_MU_CNTL_REG.write(registers.AUX_MU_CNTL_REG.read() | 0b11);
+        registers.AUX_MU_CNTL_REG.or_mask(0b11);
 
         MiniUart {
             registers,
@@ -144,8 +144,6 @@ impl MiniUart {
 impl fmt::Write for MiniUart {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         for byte in s.as_bytes().iter() {
-        // for i in 0..s.len() {
-            // let byte = &s.as_bytes()[i];
             if *byte == b'\n' {
                 self.write_byte(b'\r');
             }
