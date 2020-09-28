@@ -2,10 +2,7 @@ ROOT := $(shell git rev-parse --show-toplevel)
 
 KERN := kernel
 TARGET := target/aarch64-unknown-none/release/${KERN}
-<<<<<<< HEAD
-=======
 SDCARD ?= $(ROOT)/ext/fat32-imgs/mock1.fat32.img
->>>>>>> skeleton/lab3
 OBJCPY := cargo objcopy -- --strip-all -O binary
 TTY_PATH := /dev/ttyUSB0
 QEMU_ARGS ?=

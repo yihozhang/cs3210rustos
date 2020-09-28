@@ -9,12 +9,9 @@ use fat32::traits::FileSystem;
 use fat32::traits::{Dir, Entry};
 
 use crate::console::{kprint, kprintln, CONSOLE};
-<<<<<<< HEAD
 use core::str::from_utf8;
-=======
 use crate::ALLOCATOR;
 use crate::FILESYSTEM;
->>>>>>> skeleton/lab3
 
 /// Error type for `Command` parse failures.
 #[derive(Debug)]
