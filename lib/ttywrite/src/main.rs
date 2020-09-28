@@ -54,6 +54,17 @@ fn main() {
     let mut port = serial::open(&opt.tty_path).expect("path points to invalid TTY");
 
     // FIXME: Implement the `ttywrite` utility.
+
+    let mut tty_settings = port.read_settings().unwrap();
+    tty_settings.set_baud_rate(opt.baud_rate).expect("failed to set baud rate");
+    tty_settings.set_char_size(opt.char_width);
+    tty_settings.set_flow_control(opt.flow_control);
+    tty_settings.set_stop_bits(opt.stop_bits);
+    port.write_settings(&tty_settings).expect("failed to write tty settings");
+
+    let timeout = Duration::new(opt.timeout,0);
+    port.set_timeout(timeout).expect("port failed to set time out");
+
     let mut input_file: Box<dyn io::Read> = if let Some(path) = opt.input {
         Box::new(File::open(path).expect("cannot open input file"))
     } else {

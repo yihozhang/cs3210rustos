@@ -33,7 +33,7 @@ clean:
 	cargo clean
 	rm -rf build
 
-install: build
+install:
 	@echo "+ Installing build/$(KERN).elf [install-kernel.py]"
 	@$(ROOT)/bin/install-kernel.py build/$(KERN).elf
 
